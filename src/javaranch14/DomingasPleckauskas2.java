@@ -12,12 +12,13 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
-import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -34,12 +35,13 @@ import javax.swing.SwingUtilities;
  */
 public class DomingasPleckauskas2 {
     
+    double angle;
     JPanel panel;
     final Dimension labelSize;
     final int nrOfLabels;
     BufferedImage buf;
     Path2D path;
-    Point fixedPoint, aimPoint;
+    Point2D fixedPoint, aimPoint;
     
     public static void main(String... args) {
         SwingUtilities.invokeLater(DomingasPleckauskas2::new);
@@ -48,8 +50,9 @@ public class DomingasPleckauskas2 {
     private DomingasPleckauskas2() {
         labelSize = new Dimension(50, 50);
         nrOfLabels = 10;
-        fixedPoint = new Point(0, labelSize.height * nrOfLabels);
-        aimPoint = fixedPoint;
+        fixedPoint = new Point2D.Double(50, 50);
+        aimPoint = new Point2D.Double();
+        angle = Math.PI / 2;
         Dimension panelSize = new Dimension(labelSize.width * nrOfLabels, labelSize.height * nrOfLabels);
         createPath();
         
@@ -114,7 +117,7 @@ public class DomingasPleckauskas2 {
         int red = r.nextInt(256);
         int green = r.nextInt(256);
         int blue = r.nextInt(256);
-        Color c = new Color(red, green, blue, 50);
+        Color c = new Color(red, green, blue, r.nextInt(200));
         JLabel label = new JLabel();
         label.setOpaque(true);
         label.setBackground(c);
@@ -125,22 +128,24 @@ public class DomingasPleckauskas2 {
         path = new Path2D.Double();
         path.moveTo(0, 0);
         path.lineTo(0, 1);
-        path.moveTo(-0.2, 0.8);
+        path.moveTo(-0.1, 0.8);
         path.lineTo(0, 1);
-        path.lineTo(0.2, 0.8);
+        path.lineTo(0.1, 0.8);
         path.closePath();
     }
     
     private void drawArrow(Graphics2D g2d) {
-//        g2d.translate(fixedPoint.x, fixedPoint.y);
-//        double dx = fixedPoint.x - aimPoint.x;
-//        double dy = fixedPoint.y - aimPoint.y;
-//        double length = Math.hypot(dx, dy);
-//        g2d.scale(length, length);
-//        g2d.setStroke(new BasicStroke( 2 / (float) length));
+        double length = fixedPoint.distance(aimPoint);
+        if (length == 0.0) return;
+        double dx = aimPoint.getX() - fixedPoint.getX();
+        double dy = aimPoint.getY() - fixedPoint.getY();
+        angle = -Math.atan2(dx, dy);
+        g2d.rotate(angle, fixedPoint.getX(), fixedPoint.getY());
+        g2d.translate(fixedPoint.getX(), fixedPoint.getY());
+        g2d.scale(length, length);
+        g2d.setStroke(new BasicStroke( 2 / (float) length));
         g2d.setColor(Color.WHITE);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-//        g2d.draw(path);
-        g2d.drawLine(fixedPoint.x, fixedPoint.y, aimPoint.x, aimPoint.y);
+        g2d.draw(path);
     }
 }
