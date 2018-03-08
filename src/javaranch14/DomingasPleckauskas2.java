@@ -117,7 +117,8 @@ public class DomingasPleckauskas2 {
         int red = r.nextInt(256);
         int green = r.nextInt(256);
         int blue = r.nextInt(256);
-        Color c = new Color(red, green, blue, r.nextInt(200));
+        int alpha = r.nextInt(128);
+        Color c = new Color(red, green, blue, alpha);
         JLabel label = new JLabel();
         label.setOpaque(true);
         label.setBackground(c);
