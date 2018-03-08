@@ -41,7 +41,7 @@ public class DomingasPleckauskas2 {
     final int nrOfLabels;
     BufferedImage buf;
     Path2D path;
-    Point2D fixedPoint, aimPoint;
+    Point2D aimPoint;
     
     public static void main(String... args) {
         SwingUtilities.invokeLater(DomingasPleckauskas2::new);
@@ -50,7 +50,7 @@ public class DomingasPleckauskas2 {
     private DomingasPleckauskas2() {
         labelSize = new Dimension(50, 50);
         nrOfLabels = 10;
-        fixedPoint = new Point2D.Double(50, 50);
+//        fixedPoint = new Point2D.Double(50, 50);
         aimPoint = new Point2D.Double();
         angle = Math.PI / 2;
         Dimension panelSize = new Dimension(labelSize.width * nrOfLabels, labelSize.height * nrOfLabels);
@@ -136,6 +136,7 @@ public class DomingasPleckauskas2 {
     }
     
     private void drawArrow(Graphics2D g2d) {
+        Point2D fixedPoint = getFixedPoint();
         double length = fixedPoint.distance(aimPoint);
         if (length == 0.0) return;
         double dx = aimPoint.getX() - fixedPoint.getX();
@@ -148,5 +149,9 @@ public class DomingasPleckauskas2 {
         g2d.setColor(Color.WHITE);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.draw(path);
+    }
+    
+    private Point2D getFixedPoint() {
+        return new Point2D.Double(panel.getWidth() / 2.0, panel.getHeight());
     }
 }
