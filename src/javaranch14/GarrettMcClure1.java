@@ -21,12 +21,8 @@ import java.util.stream.IntStream;
  *
  * @author Piet
  */
+
 public class GarrettMcClure1 {
-
-}
-
-//===========================================================================
-class ProjectDriver1 {
 
     public Map<Vertex, Set<Vertex>> adjacencyMap = new TreeMap<>();
     String[] input;
@@ -34,7 +30,7 @@ class ProjectDriver1 {
 
     //-------------------------------------------------------
     public static void main(String[] args) {
-        new ProjectDriver1().go();
+        new GarrettMcClure1().go();
     }
     
     //-------------------------------------------------------
@@ -43,7 +39,9 @@ class ProjectDriver1 {
         
         System.out.println();
         System.out.println("Input graph: \n");
+        System.out.println(Arrays.toString(input));
         System.out.println("*******************************");
+        System.out.println("adjacencymap:");
         System.out.println(adjacencyMap);
         System.out.println("*******************************");
         
@@ -63,6 +61,8 @@ class ProjectDriver1 {
         input = new String[] { 
             "0 1 0 0 1 1 0 0",
             "1 0 0 0 0 1 1 0", 
+//            "0 1 0 0 0 0 0 0",
+//            "1 0 0 0 0 0 0 0",
             "0 0 0 1 0 0 1 0",
             "0 0 1 0 0 0 0 1", 
             "1 0 0 0 0 1 0 0",
@@ -70,69 +70,78 @@ class ProjectDriver1 {
             "0 1 1 0 0 0 0 1",
             "0 0 0 1 0 0 1 0"
         };
-        Vertex[] temp = IntStream.range(0, input.length).mapToObj(Vertex::new).toArray(Vertex[]::new);
+        Vertex[] temp = IntStream.rangeClosed(1, input.length)
+            .mapToObj(Vertex::new)
+            .toArray(Vertex[]::new)
+        ;
         for (int i = 0; i < input.length; i++) {
             String[] row = input[i].split(" ");
             Set<Vertex> set = IntStream.range(0, row.length)
-                .filter(j -> row[j] != "0")
+                .filter(j -> row[j].equals("1"))
                 .mapToObj(a -> temp[a])
                 .collect(toCollection(TreeSet::new))
             ;
             adjacencyMap.put(temp[i], set);
         }
-        System.out.println("*************************************");
-        System.out.println("input matrix:");
-        System.out.println(Arrays.toString(input));
-        System.out.println("*************************************");
-        System.out.println("adjacencyList:");
-        System.out.println(adjacencyMap);
-        System.out.println("*************************************");
     }
     
     //-------------------------------------------------------
-    public static List<Vertex> fs(boolean dfs) {
-        adjacencyMap.keySet().forEach(v -> {v.visited = false; v.breakPoint = false;});
-        LinkedList<Vertex> queue = new LinkedList<>();
-        Vertex v = adjacencyMap.keySet().iterator().next();
-        v.visited = true;
-        queue.add(v);
+    public List<Vertex> fs(boolean dfs) {
+        int component = 1;
+        resetVertices();
         
+        LinkedList<Vertex> queue = new LinkedList<>();
         List<Vertex> result = new ArrayList<>();
-        for (Vertex vertex: adjacencyMap.keySet()) {
-            if (queue.isEmpty()) vertex.breakPoint = true;
+        
+        for (Vertex v: adjacencyMap.keySet()) {
+            if (v.visited) continue;
+            v.visited = true;
+            v.component = component;
+            queue.add(v);
             while (!queue.isEmpty()) {
                 Vertex head = queue.removeFirst();
+                head.component = component;
                 result.add(head);
-                List<Vertex> adjacents = new ArrayList<>();
-                Set<Vertex> set = adjacencyMap.get(head);
-                set.stream()
-                    .filter(x -> !x.visited)
-                    .forEach(x -> {x.visited = true; System.out.println(x);  adjacents.add(x);})
-                ;
+                List<Vertex> adjacents = getAdjacents(head);
                 if (dfs) {
                     Collections.reverse(adjacents);
                     adjacents.stream().forEach(queue::addFirst);
                 }
                 else queue.addAll(adjacents);
+                System.out.println(queue);
+                if (queue.isEmpty()) component++;
             }
         }
         return result;
     }
     
-    //-------------------------------------------------------    
+    //-------------------------------------------------------
+    private void resetVertices() {
+        adjacencyMap.keySet().forEach(Vertex::reset);
+    }  
+    
+    //-------------------------------------------------------
+    private List<Vertex> getAdjacents(Vertex v) {
+        List<Vertex> list = new ArrayList<>();
+        adjacencyMap.get(v).stream()
+           .filter(x -> !x.visited)
+           .forEach(x -> {x.visited = true; list.add(x);})
+        ;
+        return list;
+    }
 }  //  end of class ProjectDriver1
 
 //============================================================================
 class Vertex implements Comparable<Vertex> {
     int id;
     boolean visited;
-    boolean breakPoint;
+    int component;
 
     //-------------------------------------------------------
     Vertex(int id) {
         this.id = id;
         visited = false;
-        breakPoint = false;
+        component = 0;
     }
 
     //-------------------------------------------------------
@@ -160,6 +169,12 @@ class Vertex implements Comparable<Vertex> {
     //-------------------------------------------------------
     @Override
     public String toString() {
-        return String.format("id: %d, visited: %b, breakPoint: %b%n", id, visited, breakPoint);
+        return String.format("id: %d, visited: %b, component: %d%n", id, visited, component);
+    }
+    
+    //-------------------------------------------------------
+    public void reset() {
+        visited = false;
+        component = 0;
     }
 }  // end of class Vertex
