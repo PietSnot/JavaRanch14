@@ -34,21 +34,23 @@ class MethodReference
         System.out.println();
         for(Person2 p : persons)
         {
-            System.out.println(p.getLastName()+ " " + p.getFirstName());
+            System.out.println(p);
         }
         System.out.println();
              
         // sort the list of persons
-        Comparator<Person2> comparator = (Person2 p1, Person2 p2) -> Integer.compare(p1.getWeight(), p2.getWeight());
-        Comparator<Person2> cmp = Comparator.comparing(Person2::getWeight);
+        Comparator<Integer> comparator = Integer::compare;
+        Comparator<Person2> comparator2 = (p1, p2) -> Integer.compare(p1.getWeight(), p2.getWeight());
+        Comparator<Person2> comparator3 = Comparator.comparing(Person2::getWeight, Comparator.naturalOrder());
+        Comparator<Person2> comparator4 = Comparator.comparing(Person2::getWeight);
          
-        persons.sort(cmp);
+        persons.sort(comparator4);
          
         //print the list of persons after it is sorted
         System.out.println();
         for(Person2 p : persons)
         {
-            System.out.println(p.getLastName()+ " " + p.getFirstName());
+            System.out.println(p);
         }
         System.out.println();
     }
@@ -85,5 +87,10 @@ class Person2
         public int getWeight()
         {
             return weight;
+        }
+        
+        @Override
+        public String toString() {
+            return String.format("last name: %s, first name: %s, weight: %d", lastName, firstName, weight);
         }
     }

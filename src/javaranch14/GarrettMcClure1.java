@@ -5,18 +5,16 @@
  */
 package javaranch14;
 
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toCollection;
 import java.util.stream.IntStream;
 
 /**
@@ -30,42 +28,21 @@ public class GarrettMcClure1 {
 //===========================================================================
 class ProjectDriver1 {
 
-    public static Map<Vertex, Set<Vertex>> adjacencyMap = new TreeMap<>();
-    public static int[][] edges;
+    public Map<Vertex, Set<Vertex>> adjacencyMap = new TreeMap<>();
+    String[] input;
+    List<Vertex> dfsVertices, bfsVertices;
 
-    public static void main(String[] args) throws FileNotFoundException {
-      
-        String[] input = { 
-            "0 1 0 0 1 1 0 0",
-            "1 0 0 0 0 1 1 0", 
-            "0 0 0 1 0 0 1 0",
-            "0 0 1 0 0 0 0 1", 
-            "1 0 0 0 0 1 0 0",
-            "1 1 0 0 1 0 0 0",
-            "0 1 1 0 0 0 0 1",
-            "0 0 0 1 0 0 1 0"
-        };
-
-        String[] strArray = input;
-        int dimensions = strArray.length;
-
-        int n = dimensions;
-        edges = new int[n][n];
-        
-        for (int i = 0; i < n; i++) {
-            String[] splitted = strArray[i].split(" ");
-            for (int j = 0; j < n; j++) {
-                edges[i][j] = Integer.parseInt(splitted[j]);
-            }
-         }
-        
+    //-------------------------------------------------------
+    public static void main(String[] args) {
+        new ProjectDriver1().go();
+    }
+    
+    //-------------------------------------------------------
+    public void go() {
         createAdjacencyMap();
-
-        List<Vertex> dfsVertices, bfsVertices;
         
         System.out.println();
-        System.out.println("Input graph:");
-        displayGraph(edges);
+        System.out.println("Input graph: \n");
         System.out.println("*******************************");
         System.out.println(adjacencyMap);
         System.out.println("*******************************");
@@ -81,79 +58,56 @@ class ProjectDriver1 {
         System.out.println();
     }
 
-    //=======================================================
-    public static void displayGraph(int[][] graph) {
-        Arrays.stream(graph).map(Arrays::toString).forEach(System.out::println);
-    }
-    
-    //=======================================================
-    public static void createAdjacencyMap() {
-        for (int i = 0; i < edges.length; i++) {
-            int[] row = edges[i];
+    //-------------------------------------------------------
+    public void createAdjacencyMap() {
+        input = new String[] { 
+            "0 1 0 0 1 1 0 0",
+            "1 0 0 0 0 1 1 0", 
+            "0 0 0 1 0 0 1 0",
+            "0 0 1 0 0 0 0 1", 
+            "1 0 0 0 0 1 0 0",
+            "1 1 0 0 1 0 0 0",
+            "0 1 1 0 0 0 0 1",
+            "0 0 0 1 0 0 1 0"
+        };
+        Vertex[] temp = IntStream.range(0, input.length).mapToObj(Vertex::new).toArray(Vertex[]::new);
+        for (int i = 0; i < input.length; i++) {
+            String[] row = input[i].split(" ");
             Set<Vertex> set = IntStream.range(0, row.length)
-                .filter(j -> row[j] != 0)
-                .mapToObj(Vertex::new)
-                .collect(Collectors.toCollection(TreeSet::new))
+                .filter(j -> row[j] != "0")
+                .mapToObj(a -> temp[a])
+                .collect(toCollection(TreeSet::new))
             ;
-            adjacencyMap.put(new Vertex(i), set);
+            adjacencyMap.put(temp[i], set);
         }
-        displayGraph(edges);
+        System.out.println("*************************************");
+        System.out.println("input matrix:");
+        System.out.println(Arrays.toString(input));
+        System.out.println("*************************************");
+        System.out.println("adjacencyList:");
         System.out.println(adjacencyMap);
+        System.out.println("*************************************");
     }
     
-    //=======================================================
-    static class Vertex implements Comparable<Vertex> {
-        int id;
-        boolean visited;
-        Vertex(int id) {
-            this.id = id;
-            visited = false;
-        }
-        @Override
-        public boolean equals(Object o) {
-            if (o == null || !(o instanceof Vertex)) return false;
-            Vertex v = (Vertex) o;
-            return id == v.id;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 13 * hash + this.id;
-            return hash;
-        }
-        
-        @Override
-        public int compareTo(Vertex v) {
-            return Integer.compare(id, v.id);
-        }
-        
-        @Override
-        public String toString() {
-            return String.format("id: %d, visited: %b%n", id, visited);
-        }
-    }
-    
-    //=======================================================
+    //-------------------------------------------------------
     public static List<Vertex> fs(boolean dfs) {
-        adjacencyMap.keySet().forEach(v -> v.visited = false);
+        adjacencyMap.keySet().forEach(v -> {v.visited = false; v.breakPoint = false;});
         LinkedList<Vertex> queue = new LinkedList<>();
         Vertex v = adjacencyMap.keySet().iterator().next();
+        v.visited = true;
         queue.add(v);
         
         List<Vertex> result = new ArrayList<>();
-        
         for (Vertex vertex: adjacencyMap.keySet()) {
-            if (vertex.visited) continue;
+            if (queue.isEmpty()) vertex.breakPoint = true;
             while (!queue.isEmpty()) {
                 Vertex head = queue.removeFirst();
                 result.add(head);
-                head.visited = true;
                 List<Vertex> adjacents = new ArrayList<>();
                 Set<Vertex> set = adjacencyMap.get(head);
                 set.stream()
                     .filter(x -> !x.visited)
-                    .forEach(x -> {x.visited = true; adjacents.add(x);})
+                    .forEach(x -> {x.visited = true; System.out.println(x);  adjacents.add(x);})
                 ;
                 if (dfs) {
                     Collections.reverse(adjacents);
@@ -165,5 +119,47 @@ class ProjectDriver1 {
         return result;
     }
     
-    //=======================================================
-}
+    //-------------------------------------------------------    
+}  //  end of class ProjectDriver1
+
+//============================================================================
+class Vertex implements Comparable<Vertex> {
+    int id;
+    boolean visited;
+    boolean breakPoint;
+
+    //-------------------------------------------------------
+    Vertex(int id) {
+        this.id = id;
+        visited = false;
+        breakPoint = false;
+    }
+
+    //-------------------------------------------------------
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof Vertex)) return false;
+        Vertex v = (Vertex) o;
+        return id == v.id;
+    }
+
+    //-------------------------------------------------------
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 13 * hash + this.id;
+        return hash;
+    }
+
+    //-------------------------------------------------------
+    @Override
+    public int compareTo(Vertex v) {
+        return Integer.compare(id, v.id);
+    }
+
+    //-------------------------------------------------------
+    @Override
+    public String toString() {
+        return String.format("id: %d, visited: %b, breakPoint: %b%n", id, visited, breakPoint);
+    }
+}  // end of class Vertex
