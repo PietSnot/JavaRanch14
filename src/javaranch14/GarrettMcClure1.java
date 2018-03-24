@@ -14,7 +14,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toList;
 import java.util.stream.IntStream;
 
 /**
@@ -26,7 +28,7 @@ public class GarrettMcClure1 {
 
     public Map<Vertex, Set<Vertex>> adjacencyMap = new TreeMap<>();
     String[] input;
-    List<Vertex> dfsVertices, bfsVertices;
+    List<Vertex> vertices, dfsVertices, bfsVertices;
 
     //-------------------------------------------------------
     public static void main(String[] args) {
@@ -68,34 +70,36 @@ public class GarrettMcClure1 {
             "0 1 1 0 0 0 0 1",
             "0 0 0 1 0 0 1 0"
         };
-        Vertex[] temp = IntStream.rangeClosed(1, input.length)
-            .mapToObj(Vertex::new)
-            .toArray(Vertex[]::new)
-        ;
+        
+        vertices = IntStream.rangeClosed(1, input.length).mapToObj(Vertex::new).collect(toList());
+        
         for (int i = 0; i < input.length; i++) {
             String[] row = input[i].split(" ");
             Set<Vertex> set = IntStream.range(0, row.length)
                 .filter(j -> row[j].equals("1"))
-                .mapToObj(a -> temp[a])
+                .mapToObj(vertices::get)
                 .collect(toCollection(TreeSet::new))
             ;
-            adjacencyMap.put(temp[i], set);
+            adjacencyMap.put(vertices.get(i), set);
         }
     }
     
     //-------------------------------------------------------
     public List<Vertex> fs(boolean dfs) {
-        int component = 1;
+        
         resetVertices();
         
+        int component = 1;
         LinkedList<Vertex> queue = new LinkedList<>();
         List<Vertex> result = new ArrayList<>();
         
         for (Vertex v: adjacencyMap.keySet()) {
             if (v.visited) continue;
+            
             v.visited = true;
             v.component = component;
             queue.add(v);
+            
             while (!queue.isEmpty()) {
                 Vertex head = queue.removeFirst();
                 head.component = component;
@@ -131,6 +135,7 @@ public class GarrettMcClure1 {
 
 //============================================================================
 class Vertex implements Comparable<Vertex> {
+    
     int id;
     boolean visited;
     int component;
