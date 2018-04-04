@@ -58,3 +58,7 @@ class MyClass {
         ref.meth(set);
     }
 }
+
+class Test2 {
+    Integer a = 1;
+}
