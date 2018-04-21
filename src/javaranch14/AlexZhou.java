@@ -20,8 +20,8 @@ public class AlexZhou {
 class MyClass2 {
     public static void main(String args[]) {
         Predicate<? extends Object> p = s -> s.hashCode() < 1_000;
-        helper(new Point(), p);
-        helper(new Object(), p);
+//        helper(new Point(), p);
+//        helper(new Object(), p);
 //        helper("x", p);
         
     }
